@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Carrera de Algoritmos Paralelos</title>
+    <title>Carrera de algoritmos paralelos</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
     <style>
@@ -91,10 +91,7 @@
             font-weight: 600;
         }
 
-        .status-running { color: var(--warning); font-weight: bold; }
-        .status-finished { color: var(--secondary); font-weight: bold; }
-
-        #sortWinner {
+        #ganador_orden {
             text-align: center;
             margin-top: 15px;
             font-size: 1.2rem;
@@ -113,24 +110,27 @@
 
 <body>
 
-    <h1>🏁 Carrera de Algoritmos Paralelos</h1>
+    <h1>Carrera de algoritmos paralelos</h1>
 
+    <!-- generar arreglo -->
     <div class="card">
         <div class="controls">
-            <label><strong>Tamaño del arreglo:</strong><br>
-                <input id="arraySize" type="number" value="20000">
+            <label>
+                <strong>Tamaño del arreglo:</strong><br>
+                <input id="tam_arreglo" type="number" value="20000">
             </label>
 
-            <button class="btn-primary" onclick="generateArray()">Generar arreglo</button>
-            <button id="btnSort" class="btn-success" onclick="startSortRace()" disabled>Iniciar carrera</button>
+            <button class="btn-primary" onclick="generar_arreglo()">Generar arreglo</button>
+            <button id="btn_ordenar" class="btn-success" onclick="iniciar_carrera()" disabled>Iniciar carrera</button>
             <button class="btn-danger" onclick="location.reload()">Reiniciar</button>
         </div>
 
-        <p id="statusText" style="text-align:center;">Esperando generación...</p>
+        <p id="texto_estado" style="text-align:center;">Esperando generacion...</p>
     </div>
 
+    <!-- resultados ordenamiento -->
     <div class="card">
-        <h2>📊 Resultados de Ordenamiento</h2>
+        <h2>📊 Resultados del ordenamiento</h2>
 
         <table>
             <thead>
@@ -142,34 +142,44 @@
                     <th>Memoria</th>
                 </tr>
             </thead>
-            <tbody id="sortBody"></tbody>
+            <tbody id="tabla_orden"></tbody>
         </table>
 
-        <p id="sortWinner"></p>
+        <p id="ganador_orden"></p>
     </div>
 
+    <!-- busquedas -->
     <div class="card">
-        <h2>🔍 Pruebas de Búsqueda</h2>
+        <h2>🔍 Pruebas de busqueda</h2>
 
         <div class="controls" style="justify-content:start;">
-            <label><strong>Valor a buscar:</strong><br>
-                <input id="targetVal" type="number" value="0">
+            <label>
+                <strong>Valor a buscar:</strong><br>
+                <input id="valor_busqueda" type="number" value="0">
             </label>
-            <button id="btnSearch" class="btn-warning" onclick="startSearchRace()" disabled>Ejecutar búsqueda</button>
+            <button id="btn_buscar" class="btn-warning" onclick="iniciar_busquedas()" disabled>
+                Ejecutar busquedas
+            </button>
         </div>
 
         <table>
             <thead>
-                <tr><th>Tipo</th><th>Resultado</th><th>Tiempo (ms)</th></tr>
+                <tr>
+                    <th>Metodo</th>
+                    <th>Resultado</th>
+                    <th>Tiempo (ms)</th>
+                </tr>
             </thead>
             <tbody>
-                <tr><td>Secuencial</td><td id="resSeq">---</td><td id="timeSeq">---</td></tr>
-                <tr><td>Binaria</td><td id="resBin">---</td><td id="timeBin">---</td></tr>
+                <tr><td>Secuencial</td><td id="resultado_sec">---</td><td id="tiempo_sec">---</td></tr>
+                <tr><td>Binaria</td><td id="resultado_bin">---</td><td id="tiempo_bin">---</td></tr>
             </tbody>
         </table>
     </div>
 
-    <p class="footer-note">Esta aplicación usa Web Workers reales para paralelismo.</p>
+    <p class="footer-note">
+        Esta aplicacion usa Web Workers para correr algoritmos en paralelo.
+    </p>
 
     <script src="app.js"></script>
 </body>

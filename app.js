@@ -1,87 +1,92 @@
-let baseArray = [];
-let sortedArray = [];
+let arreglo_base = [];
+let arreglo_ordenado = [];
 
-const algorithms = [
-    { name: "Quick Sort", id: "quick", complexity: "O(n log n)" },
-    { name: "Insertion Sort", id: "insert", complexity: "O(n²)" },
-    { name: "Bubble Sort", id: "bubble", complexity: "O(n²)" }
+const algoritmos = [
+    { nombre: "Quick Sort", id: "quick", complejidad: "O(n log n)" },
+    { nombre: "Insertion Sort", id: "insert", complejidad: "O(n²)" },
+    { nombre: "Bubble Sort", id: "bubble", complejidad: "O(n²)" }
 ];
 
 function $(id) {
     return document.getElementById(id);
 }
 
-/* ---------------------------
-   CREAR TABLA DE RESULTADOS
-----------------------------*/
-function initTable() {
-    const tbody = $("sortBody");
-    tbody.innerHTML = "";
+// tabla que muestra los resultados 
+function crear_tabla() {
+    const cuerpo = $("tabla_orden");
+    cuerpo.innerHTML = "";
 
-    algorithms.forEach(a => {
-        tbody.innerHTML += `
-            <tr id="row-${a.id}">
-                <td><strong>${a.name}</strong></td>
-                <td class="status">Esperando...</td>
-                <td class="time">---</td>
-                <td>${a.complexity}</td>
-                <td class="mem">---</td>
-            </tr>`;
+    algoritmos.forEach(a => {
+        cuerpo.innerHTML += `
+            <tr id="fila-${a.id}">
+                <td><strong>${a.nombre}</strong></td>
+                <td class="estado">Esperando...</td>
+                <td class="tiempo">---</td>
+                <td>${a.complejidad}</td>
+                <td class="memoria">---</td>
+            </tr>
+        `;
     });
 }
 
-/* ---------------------------
-   GENERAR ARREGLO
-----------------------------*/
-function generateArray() {
-    const size = parseInt($("arraySize").value);
+// generar un arreglo aleatorio
+function generar_arreglo() {
+    const tam = parseInt($("tam_arreglo").value);
 
-    baseArray = Array.from({ length: size }, () => Math.floor(Math.random() * size * 2));
+    arreglo_base = Array.from(
+        { length: tam },
+        () => Math.floor(Math.random() * tam * 2)
+    );
 
-    $("btnSort").disabled = false;
-    $("statusText").innerText = `Arreglo generado con ${size} elementos.`;
-    $("targetVal").value = baseArray[Math.floor(Math.random() * size)];
+    $("btn_ordenar").disabled = false;
+    $("texto_estado").innerText = "Arreglo generado con " + tam + " elementos.";
 
-    sortedArray = [];
-    initTable();
+    $("valor_busqueda").value = arreglo_base[Math.floor(Math.random() * tam)];
+    arreglo_ordenado = [];
+
+    crear_tabla();
 }
 
-/* ---------------------------
-   CARRERA DE ORDENAMIENTO
-----------------------------*/
-function startSortRace() {
-    $("btnSort").disabled = true;
-    let finished = 0;
-    let results = [];
+function iniciar_carrera() {
+    $("btn_ordenar").disabled = true;
 
-    algorithms.forEach(a => {
+    let terminados = 0;
+    let resultados = [];
+
+    algoritmos.forEach(a => {
         const worker = new Worker("worker.js");
 
-        worker.postMessage({ algorithm: a.name, data: [...baseArray] });
+        worker.postMessage({
+            algoritmo: a.nombre,
+            datos: [...arreglo_base]
+        });
 
-        const row = $("row-" + a.id);
-        row.querySelector(".status").innerText = "Procesando...";
-        row.querySelector(".status").classList.add("status-running");
+        const fila = $("fila-" + a.id);
+        fila.querySelector(".estado").innerText = "Procesando...";
+        fila.querySelector(".estado").classList.add("status-running");
 
         worker.onmessage = (e) => {
-            row.querySelector(".status").innerText = "Finalizado";
-            row.querySelector(".status").classList.remove("status-running");
-            row.querySelector(".status").classList.add("status-finished");
+            fila.querySelector(".estado").innerText = "Finalizado";
+            fila.querySelector(".estado").classList.remove("status-running");
+            fila.querySelector(".estado").classList.add("status-finished");
 
-            row.querySelector(".time").innerText = `${e.data.time} ms`;
-            row.querySelector(".mem").innerText = `${e.data.memory} KB`;
+            fila.querySelector(".tiempo").innerText = e.data.tiempo + " ms";
+            fila.querySelector(".memoria").innerText = e.data.memoria + " KB";
 
-            results.push({ name: a.name, time: parseFloat(e.data.time) });
+            resultados.push({
+                nombre: a.nombre,
+                tiempo: parseFloat(e.data.tiempo)
+            });
 
-            if (a.name === "Quick Sort") {
-                sortedArray = [...baseArray].sort((x, y) => x - y);
+            if (a.nombre === "Quick Sort") {
+                arreglo_ordenado = [...arreglo_base].sort((x, y) => x - y);
             }
 
-            finished++;
-            if (finished === algorithms.length) {
-                showWinner(results);
-                $("btnSearch").disabled = false;
-                showProcessMemory();   // ← MEMORIA TOTAL DEL PROCESO
+            terminados++;
+            if (terminados === algoritmos.length) {
+                mostrar_ganador(resultados);
+                $("btn_buscar").disabled = false;
+                mostrar_memoria_proceso();
             }
 
             worker.terminate();
@@ -89,77 +94,79 @@ function startSortRace() {
     });
 }
 
-/* ---------------------------
-   DETERMINAR GANADOR
-----------------------------*/
-function showWinner(results) {
-    const winner = results.reduce((a, b) => a.time < b.time ? a : b);
-    $("sortWinner").innerText = `🏆 Ganó: ${winner.name} (${winner.time} ms)`;
+// mostrar ganador
+
+function mostrar_ganador(resultados) {
+    const ganador = resultados.reduce(
+        (a, b) => (a.tiempo < b.tiempo ? a : b)
+    );
+
+    $("ganador_orden").innerText =
+        "🏆 Gano: " + ganador.nombre + " (" + ganador.tiempo + " ms)";
 }
 
-/* ---------------------------
-   BÚSQUEDAS
-----------------------------*/
-function startSearchRace() {
-    const target = parseInt($("targetVal").value);
+// iniciar las busquedas
 
-    // SEC
+function iniciar_busquedas() {
+    const objetivo = parseInt($("valor_busqueda").value);
+
+    // busqueda secuencial
+    $("resultado_sec").innerText = "Buscando...";
+
     const w1 = new Worker("worker.js");
-    w1.postMessage({ algorithm: "Búsqueda Secuencial", data: baseArray, target });
-
-    $("resSeq").innerText = "Buscando...";
+    w1.postMessage({
+        algoritmo: "Busqueda Secuencial",
+        datos: arreglo_base,
+        objetivo: objetivo
+    });
 
     w1.onmessage = (e) => {
-        $("resSeq").innerText = e.data.found;
-        $("timeSeq").innerText = `${e.data.time} ms`;
+        $("resultado_sec").innerText = e.data.encontrado;
+        $("tiempo_sec").innerText = e.data.tiempo + " ms";
         w1.terminate();
     };
 
-    // BIN (con array ordenado)
-    if (sortedArray.length === 0) sortedArray = [...baseArray].sort((a, b) => a - b);
+    // busqueda binaria
+    if (arreglo_ordenado.length === 0) {
+        arreglo_ordenado = [...arreglo_base].sort((a, b) => a - b);
+    }
+
+    $("resultado_bin").innerText = "Buscando...";
 
     const w2 = new Worker("worker.js");
-    w2.postMessage({ algorithm: "Búsqueda Binaria", data: sortedArray, target });
-
-    $("resBin").innerText = "Buscando...";
+    w2.postMessage({
+        algoritmo: "Busqueda Binaria",
+        datos: arreglo_ordenado,
+        objetivo: objetivo
+    });
 
     w2.onmessage = (e) => {
-        $("resBin").innerText = e.data.found;
-        $("timeBin").innerText = `${e.data.time} ms`;
+        $("resultado_bin").innerText = e.data.encontrado;
+        $("tiempo_bin").innerText = e.data.tiempo + " ms";
         w2.terminate();
     };
 }
 
-/* ---------------------------
-   MEMORIA TOTAL DEL PROCESO
-----------------------------*/
-function showProcessMemory() {
-    if (!performance.memory) {
-        console.warn("Memoria no disponible en este navegador");
-        return;
-    }
+// memoria total del proceso
+function mostrar_memoria_proceso() {
+    if (!performance.memory) return;
 
-    const used = (performance.memory.usedJSHeapSize / 1024 / 1024).toFixed(2);
+    const usada = (performance.memory.usedJSHeapSize / 1024 / 1024).toFixed(2);
     const total = (performance.memory.totalJSHeapSize / 1024 / 1024).toFixed(2);
-    const limit = (performance.memory.jsHeapSizeLimit / 1024 / 1024).toFixed(2);
-
-    console.log("🔹 Memoria usada:", used + " MB");
-    console.log("🔹 Heap total:", total + " MB");
-    console.log("🔹 Límite:", limit + " MB");
+    const limite = (performance.memory.jsHeapSizeLimit / 1024 / 1024).toFixed(2);
 
     const p = document.createElement("p");
     p.style.textAlign = "center";
     p.style.marginTop = "10px";
-    p.innerHTML = `
-        <strong>Memoria total del Proceso:</strong><br>
-        Usada: ${used} MB<br>
-        Heap total: ${total} MB<br>
-        Límite: ${limit} MB
-    `;
+
+    p.innerHTML =
+        "<strong>Memoria total del proceso:</strong><br>" +
+        "Usada: " + usada + " MB<br>" +
+        "Heap total: " + total + " MB<br>" +
+        "Limite: " + limite + " MB";
+
     document.body.appendChild(p);
 }
 
-/* ---------------------------
-   INICIALIZAR TABLA
-----------------------------*/
-initTable();
+
+crear_tabla();

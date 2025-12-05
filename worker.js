@@ -1,108 +1,97 @@
 self.onmessage = function (e) {
-    const { algorithm, data, target } = e.data;
 
-    const start = performance.now();
-    let result = null;
+    const { algoritmo, datos, objetivo } = e.data;
+    const inicio = performance.now();
+    let resultado = null;
 
-    /* ---------------------------
-       ALGORITMOS DE ORDENAMIENTO
-    ----------------------------*/
-    function quickSort(arr) {
+    // ordenamientos
+    function quick_sort(arr) {
         if (arr.length <= 1) return arr;
 
-        const pivot = arr[arr.length - 1];
-        const left = [];
-        const right = [];
+        const pivote = arr[arr.length - 1];
+        const menores = [];
+        const mayores = [];
 
         for (let i = 0; i < arr.length - 1; i++) {
-            if (arr[i] <= pivot) left.push(arr[i]);
-            else right.push(arr[i]);
+            if (arr[i] <= pivote) menores.push(arr[i]);
+            else mayores.push(arr[i]);
         }
-        return [...quickSort(left), pivot, ...quickSort(right)];
+
+        return [...quick_sort(menores), pivote, ...quick_sort(mayores)];
     }
 
-    function insertionSort(arr) {
+    function insercion(arr) {
         for (let i = 1; i < arr.length; i++) {
-            let key = arr[i];
+            let valor = arr[i];
             let j = i - 1;
 
-            while (j >= 0 && arr[j] > key) {
+            while (j >= 0 && arr[j] > valor) {
                 arr[j + 1] = arr[j];
                 j--;
             }
-            arr[j + 1] = key;
+            arr[j + 1] = valor;
         }
         return arr;
     }
 
-    function bubbleSort(arr) {
-        let len = arr.length;
-        for (let i = 0; i < len; i++) {
-            for (let j = 0; j < len - i - 1; j++) {
+    function burbuja(arr) {
+        let n = arr.length;
+
+        for (let i = 0; i < n; i++) {
+            for (let j = 0; j < n - i - 1; j++) {
                 if (arr[j] > arr[j + 1]) {
-                    const tmp = arr[j];
+                    const temp = arr[j];
                     arr[j] = arr[j + 1];
-                    arr[j + 1] = tmp;
+                    arr[j + 1] = temp;
                 }
             }
         }
         return arr;
     }
 
-    /* ---------------------------
-       ALGORITMOS DE BÚSQUEDA
-    ----------------------------*/
-    function sequentialSearch(arr, t) {
+    function busqueda_secuencial(arr, x) {
         for (let i = 0; i < arr.length; i++) {
-            if (arr[i] === t) return i;
+            if (arr[i] === x) return i;
         }
         return -1;
     }
 
-    function binarySearch(arr, t) {
-        let low = 0;
-        let high = arr.length - 1;
+    function busqueda_binaria(arr, x) {
+        let inicio = 0;
+        let fin = arr.length - 1;
 
-        while (low <= high) {
-            const mid = Math.floor((low + high) / 2);
+        while (inicio <= fin) {
+            const medio = Math.floor((inicio + fin) / 2);
 
-            if (arr[mid] === t) return mid;
-            if (arr[mid] < t) low = mid + 1;
-            else high = mid - 1;
+            if (arr[medio] === x) return medio;
+            if (arr[medio] < x) inicio = medio + 1;
+            else fin = medio - 1;
         }
         return -1;
     }
 
-    /* ---------------------------
-       EJECUTAR ALGORITMO CORRESPONDIENTE
-    ----------------------------*/
-    let output = null;
+    let salida = null;
 
-    if (algorithm === "Quick Sort") output = quickSort(data);
-    else if (algorithm === "Insertion Sort") output = insertionSort(data);
-    else if (algorithm === "Bubble Sort") output = bubbleSort(data);
+    if (algoritmo === "Quick Sort") salida = quick_sort(datos);
+    else if (algoritmo === "Insertion Sort") salida = insercion(datos);
+    else if (algoritmo === "Bubble Sort") salida = burbuja(datos);
 
-    else if (algorithm === "Búsqueda Secuencial") {
-        result = sequentialSearch(data, target);
+    else if (algoritmo === "Busqueda Secuencial") {
+        resultado = busqueda_secuencial(datos, objetivo);
     }
-    else if (algorithm === "Búsqueda Binaria") {
-        result = binarySearch(data, target);
+    else if (algoritmo === "Busqueda Binaria") {
+        resultado = busqueda_binaria(datos, objetivo);
     }
 
-    const end = performance.now();
+    const fin = performance.now();
 
-    /* ---------------------------
-       ESTIMACIÓN DE MEMORIA
-    ----------------------------*/
-    // Aproximación: cada número ocupa 8 bytes
-    const estimatedMemoryKB = (data.length * 8 / 1024).toFixed(2);
+    //calculo de memoria usada por el arreglo
+    const memoria_kb = (datos.length * 8 / 1024).toFixed(2);
 
-    /* ---------------------------
-       RESPUESTA AL MAIN THREAD
-    ----------------------------*/
+    // respuesta al proceso principal
     self.postMessage({
-        time: (end - start).toFixed(2),
-        found: result,
-        memory: estimatedMemoryKB
+        tiempo: (fin - inicio).toFixed(2),
+        encontrado: resultado,
+        memoria: memoria_kb
     });
 };
